@@ -395,3 +395,36 @@ img { display: block; max-width: 100%; }
   .header-controls { gap: 8px; align-items: center; }
   .title-block { gap: 10px; }
 }
+@media (max-width: 768px) {
+.game-header {
+flex-direction: column;
+align-items: center;
+text-align: center;
+}
+
+.header-controls {
+flex-direction: column;
+width: 100%;
+align-items: center;
+}
+
+.score-board {
+width: 100%;
+grid-template-columns: repeat(2, 1fr);
+}
+
+.board {
+grid-template-columns: repeat(4, var(--card-size)) !important;
+gap: 10px;
+justify-content: center;
+}
+
+.primary-button {
+width: 100%;
+max-width: 280px;
+}
+
+.modal-stats {
+grid-template-columns: 1fr;
+}
+}
