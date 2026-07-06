@@ -61,6 +61,9 @@ function createCard(emoji) {
   inner.append(front, back);
   card.appendChild(inner);
   card.addEventListener('click', () => handleCardClick(card));
+  // Touch feedback for mobile: add a quick pressed state
+  card.addEventListener('touchstart', () => card.classList.add('pressed'));
+  card.addEventListener('touchend', () => setTimeout(() => card.classList.remove('pressed'), 120));
   return card;
 }
 
@@ -189,7 +192,7 @@ function closeModal() {
 function launchCelebration() {
   const layer = document.querySelector('.confetti-layer');
   layer.innerHTML = '';
-  const colors = ['#ff7dfd', '#ffe36b', '#8bf0ff', '#8fffa4', '#ffba8f'];
+  const colors = ['#FFD6E0', '#FFF7A8', '#AEE9FF', '#B8F3D6', '#FF6B6B', '#7B46FF'];
 
   for (let i = 0; i < 40; i++) {
     const piece = document.createElement('div');

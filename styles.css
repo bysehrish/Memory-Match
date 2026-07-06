@@ -1,22 +1,24 @@
 ﻿:root {
-  --sky: #7ce6ff;
-  --sun: #fff59d;
-  --cloud: #ffffff;
-  --card: #fffdf9;
-  --text: #2b2644;
-  --text-muted: #6f6d8d;
-  --primary: #7b46ff;
-  --primary-soft: #b384ff;
-  --shadow: 0 30px 80px rgba(29, 16, 83, 0.16);
+  --sky: #aeffbd;       /* sky blue */
+  --mint: #ccb8f3;      /* mint green */
+  --sun: #FFF7A8;       /* sunshine yellow */
+  --soft-pink: #FFD6E0; /* soft pink */
+  --card: #fffffff3;
+  --text: #2B2644;
+  --text-muted: #6F6D8D;
+  --accent: #FF6B6B;    /* bold accent for highlights */
+  --accent-2: #7B46FF;
+  --shadow: 0 20px 50px rgba(36,24,74,0.12);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
 body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: radial-gradient(circle at top left, rgba(255, 243, 182, 0.9), transparent 24%),
-              radial-gradient(circle at top right, rgba(179, 226, 255, 0.8), transparent 20%),
-              linear-gradient(180deg, #d0f1ff 0%, #fff7ca 100%);
+  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at 10% 10%, rgba(174,233,255,0.45), transparent 20%),
+              radial-gradient(circle at 90% 20%, rgba(255,214,226,0.45), transparent 18%),
+              linear-gradient(180deg, var(--sky) 0%, var(--sun) 100%);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 img { display: block; max-width: 100%; }
 .page-shell { max-width: 980px; margin: 0 auto; padding: 18px 16px 24px; }
@@ -38,23 +40,26 @@ img { display: block; max-width: 100%; }
   gap: 14px;
 }
 .title-badge {
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
   display: grid;
   place-items: center;
   font-size: 1.35rem;
-  background: linear-gradient(135deg, #ffd5ff, #c88dff);
-  box-shadow: 0 20px 40px rgba(178, 84, 255, 0.18);
+  background: linear-gradient(135deg, var(--soft-pink), var(--accent-2));
+  box-shadow: 0 18px 36px rgba(123,70,255,0.14);
 }
 .subtitle {
   margin: 0 0 6px;
   color: var(--text-muted);
   font-size: 0.95rem;
 }
-.game-header h2 {
+.hero-title {
   margin: 0;
-  font-size: 1.7rem;
+  font-size: 2.1rem;
+  font-family: 'Baloo 2', 'Poppins', cursive;
+  letter-spacing: 0.6px;
+  color: var(--text);
 }
 .header-controls {
   display: flex;
@@ -63,19 +68,24 @@ img { display: block; max-width: 100%; }
   gap: 16px;
 }
 .primary-button {
-  background: linear-gradient(135deg, var(--primary), var(--primary-soft));
-  border: none;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  border: 2px solid rgba(255,255,255,0.18);
   color: white;
-  padding: 12px 22px;
-  border-radius: 999px;
+  padding: 10px 18px;
+  border-radius: 12px;
   font-weight: 700;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
-  transition: transform 180ms ease, box-shadow 180ms ease;
-  box-shadow: 0 16px 34px rgba(123, 70, 255, 0.22);
+  transition: transform 180ms cubic-bezier(.2,.9,.3,1), box-shadow 180ms ease;
+  box-shadow: 0 10px 28px rgba(36,24,74,0.12);
 }
-.primary-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 22px 48px rgba(123, 70, 255, 0.26);
+.primary-button:hover,
+.primary-button:focus {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 44px rgba(36,24,74,0.16);
+}
+.primary-button:active {
+  transform: translateY(0) scale(0.99);
 }
 .score-board {
   display: grid;
@@ -116,7 +126,7 @@ img { display: block; max-width: 100%; }
 }
 .board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
   gap: 14px;
 }
 .card {
@@ -124,6 +134,24 @@ img { display: block; max-width: 100%; }
   aspect-ratio: 1 / 1;
   perspective: 1100px;
   min-height: 0;
+  border-radius: 16px;
+  border: 3px solid rgba(255,255,255,0.6);
+  box-shadow: 0 10px 22px rgba(34,22,70,0.08);
+  overflow: visible;
+  padding: 0;
+  background: transparent;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+}
+.card:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.card.pressed .card-inner,
+.card:active .card-inner {
+  transform: translateY(0) scale(0.98) !important;
 }
 .card-inner {
   width: 100%;
@@ -147,30 +175,35 @@ img { display: block; max-width: 100%; }
   transition: box-shadow 180ms ease, transform 180ms ease;
 }
 .card-front {
-  background: linear-gradient(180deg, #fdfbff 0%, #f6e7ff 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 18px 34px rgba(38, 24, 89, 0.08);
+  background: linear-gradient(180deg, var(--card) 0%, #fffaf6 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 16px 34px rgba(36,24,74,0.06);
+  border-radius: 14px;
+  border: 2px solid rgba(0,0,0,0.06);
 }
 .card-front::before {
   content: '❓';
-  font-size: 2rem;
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
 }
 .card-back {
   transform: rotateY(180deg);
-  background: linear-gradient(180deg, #ffffff 0%, #ffd9ff 100%);
-  border: 1px solid rgba(255,255,255,0.85);
+  background: linear-gradient(180deg, var(--soft-pink) 0%, var(--mint) 100%);
+  border: 1px solid rgba(255,255,255,0.9);
 }
 .card-back .emoji {
-  font-size: clamp(2.2rem, 3vw, 3.6rem);
+  font-size: clamp(2rem, 3.4vw, 3.8rem);
 }
 .card:hover:not(.revealed):not(.matched) .card-inner {
-  transform: translateY(-4px);
+  transform: translateY(-6px) rotateX(2deg);
+}
+.card:active:not(.revealed):not(.matched) .card-inner {
+  transform: translateY(0) scale(0.98);
 }
 .card.revealed .card-front,
 .card.matched .card-front {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 24px 40px rgba(84, 63, 167, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 26px 48px rgba(123,70,255,0.12);
 }
 .card.matched .card-inner {
-  animation: pop-match 240ms ease forwards;
+  animation: pop-match 260ms ease forwards;
 }
 @keyframes pop-match {
   0% { transform: rotateY(180deg) scale(1); }
@@ -199,6 +232,7 @@ img { display: block; max-width: 100%; }
   box-shadow: var(--shadow);
   border: 1px solid rgba(255,255,255,0.82);
 }
+.modal-card { font-family: 'Poppins', sans-serif; }
 .modal-hero {
   font-size: 3rem;
   margin-bottom: 16px;
