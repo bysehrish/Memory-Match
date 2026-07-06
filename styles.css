@@ -17,20 +17,21 @@ body {
               radial-gradient(circle at top right, rgba(179, 226, 255, 0.8), transparent 20%),
               linear-gradient(180deg, #d0f1ff 0%, #fff7ca 100%);
   color: var(--text);
+  overflow-x: auto;
 }
 img { display: block; max-width: 100%; }
-.page-shell { max-width: 980px; margin: 0 auto; padding: 18px 16px 24px; }
+.page-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 16px 28px;
+}
 .game-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 18px 22px;
-  border-radius: 24px;
-  background: rgba(255,255,255,0.94);
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(255,255,255,0.85);
+  padding: 6px 0;
 }
 .title-block {
   display: flex;
@@ -83,8 +84,9 @@ img { display: block; max-width: 100%; }
   gap: 10px;
 }
 .score-chip {
-  background: rgba(255,255,255,0.96);
-  border: 1px solid rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.74);
+  border: 1px solid rgba(255,255,255,0.55);
+  backdrop-filter: blur(8px);
   border-radius: 20px;
   padding: 12px 14px;
   min-width: 84px;
@@ -106,22 +108,24 @@ img { display: block; max-width: 100%; }
 }
 .game-area {
   margin-top: 28px;
+  display: flex;
+  justify-content: center;
 }
 .board-shell {
-  padding: 18px;
-  border-radius: 28px;
-  background: rgba(255,255,255,0.96);
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(255,255,255,0.9);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, 110px);
   gap: 14px;
+  width: max-content;
 }
 .card {
-  width: 100%;
-  aspect-ratio: 1 / 1;
+  width: 110px;
+  height: 110px;
   perspective: 1100px;
   min-height: 0;
 }
@@ -294,7 +298,7 @@ img { display: block; max-width: 100%; }
 }
 @media (max-width: 700px) {
   .page-shell { padding: 20px 16px 28px; }
-  .game-header { padding: 20px 20px; }
+  .game-header { padding: 6px 0; }
   .board { gap: 14px; }
 }
 @media (max-width: 600px) {
@@ -302,4 +306,12 @@ img { display: block; max-width: 100%; }
   .game-header { flex-direction: column; align-items: stretch; }
   .header-controls { justify-content: center; }
   .score-board { grid-template-columns: repeat(2, minmax(0, auto)); }
+  .board {
+    grid-template-columns: repeat(4, 110px);
+    gap: 14px;
+  }
+  .card {
+    width: 110px;
+    height: 110px;
+  }
 }
