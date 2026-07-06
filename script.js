@@ -28,12 +28,20 @@ function shuffle(array) {
 }
 
 function loadHighScore() {
-  const stored = localStorage.getItem('memory-match-high-score');
-  highScore = stored ? Number(stored) : 0;
+  try {
+    const stored = localStorage.getItem('memory-match-high-score');
+    highScore = stored ? Number(stored) : 0;
+  } catch (e) {
+    highScore = 0;
+  }
 }
 
 function saveHighScore() {
-  localStorage.setItem('memory-match-high-score', String(highScore));
+  try {
+    localStorage.setItem('memory-match-high-score', String(highScore));
+  } catch (e) {
+    // ignore storage errors (e.g., private mode)
+  }
 }
 
 function setStatus(message) {
@@ -54,6 +62,8 @@ function createCard(emoji) {
   card.type = 'button';
   card.className = 'card';
   card.dataset.emoji = emoji;
+  card.setAttribute('aria-pressed', 'false');
+  card.setAttribute('aria-label', 'Hidden card');
 
   const inner = document.createElement('div');
   inner.className = 'card-inner';
@@ -68,6 +78,12 @@ function createCard(emoji) {
   inner.append(front, back);
   card.appendChild(inner);
   card.addEventListener('click', () => handleCardClick(card));
+  card.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      card.click();
+    }
+  });
   return card;
 }
 
@@ -96,6 +112,8 @@ function handleCardClick(card) {
   if (lockBoard || card.classList.contains('revealed') || card.classList.contains('matched')) return;
 
   card.classList.add('revealed');
+  card.setAttribute('aria-pressed', 'true');
+  card.setAttribute('aria-label', `Card showing ${card.dataset.emoji}`);
 
   if (!firstCard) {
     firstCard = card;
@@ -118,6 +136,10 @@ function handleCardClick(card) {
 function handleMatch() {
   firstCard.classList.add('matched');
   secondCard.classList.add('matched');
+  firstCard.setAttribute('aria-pressed', 'true');
+  secondCard.setAttribute('aria-pressed', 'true');
+  const live = document.getElementById('sr-live');
+  if (live) live.textContent = `Matched ${firstCard.dataset.emoji}`;
   score += 100;
   matchedPairs += 1;
   animateMatch(firstCard);
@@ -145,6 +167,8 @@ function handleMismatch() {
   setTimeout(() => {
     firstCard.classList.remove('revealed');
     secondCard.classList.remove('revealed');
+    firstCard.setAttribute('aria-pressed', 'false');
+    secondCard.setAttribute('aria-pressed', 'false');
     resetGameState();
     setStatus('Try a new pair and keep the garden growing.');
   }, 900);
@@ -163,7 +187,11 @@ function triggerMatchBurst(card) {
   const originY = rect.top + rect.height / 2;
   const particles = ['✨', '🎉', '🌟', '💖', '🎈'];
 
-  for (let i = 0; i < 8; i++) {
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const concurrency = navigator.hardwareConcurrency || 4;
+  const count = reduced ? 0 : Math.max(4, Math.min(12, Math.floor(concurrency * 2)));
+
+  for (let i = 0; i < count; i++) {
     const piece = document.createElement('div');
     piece.className = 'match-burst-piece';
     piece.textContent = particles[Math.floor(Math.random() * particles.length)];
@@ -194,19 +222,56 @@ function showVictoryModal() {
   winScoreEl.textContent = score;
   winHighScoreEl.textContent = highScore > 0 ? highScore : '--';
   modal.classList.remove('hidden');
+  trapModalFocus(modal);
   launchCelebration();
 }
 
 function closeModal() {
   modal.classList.add('hidden');
+  releaseModalFocus(modal);
+}
+
+// Modal focus trap utilities
+let lastFocusedBeforeModal = null;
+function trapModalFocus(modalEl) {
+  lastFocusedBeforeModal = document.activeElement;
+  const focusable = modalEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  function keyHandler(e) {
+    if (e.key === 'Tab') {
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    } else if (e.key === 'Escape') {
+      closeModal();
+    }
+  }
+  modalEl.__keyHandler = keyHandler;
+  document.addEventListener('keydown', keyHandler);
+  if (first) first.focus();
+}
+
+function releaseModalFocus(modalEl) {
+  if (modalEl && modalEl.__keyHandler) {
+    document.removeEventListener('keydown', modalEl.__keyHandler);
+    delete modalEl.__keyHandler;
+  }
+  if (lastFocusedBeforeModal) lastFocusedBeforeModal.focus();
+  lastFocusedBeforeModal = null;
 }
 
 function launchCelebration() {
   const layer = document.querySelector('.confetti-layer');
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   layer.innerHTML = '';
-  const colors = ['#4f9d62', '#8ecf9b', '#ffe36b', '#7dd3fc', '#ffb36b'];
+  const colors = ['#ff7dfd', '#ffe36b', '#8bf0ff', '#8fffa4', '#ffba8f'];
 
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < confettiCount; i++) {
     const piece = document.createElement('div');
     piece.className = 'confetti-piece';
     piece.style.background = colors[Math.floor(Math.random() * colors.length)];
@@ -217,7 +282,7 @@ function launchCelebration() {
     layer.appendChild(piece);
   }
 
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < sparkleCount; i++) {
     const sparkle = document.createElement('div');
     sparkle.className = 'sparkle-piece';
     sparkle.style.background = colors[Math.floor(Math.random() * colors.length)];
@@ -236,4 +301,27 @@ modal.addEventListener('click', event => {
   if (event.target === modal) closeModal();
 });
 
+// Responsive card sizing: compute exact size so 4x4 fits viewport
+function updateCardSize() {
+  const shell = document.querySelector('.page-shell');
+  const header = document.querySelector('.game-header');
+  const shellStyles = getComputedStyle(shell);
+  const shellPaddingX = parseFloat(shellStyles.paddingLeft) + parseFloat(shellStyles.paddingRight);
+  const availableWidth = Math.max(320, window.innerWidth - shellPaddingX - 24);
+  const headerHeight = header ? header.getBoundingClientRect().height : 120;
+  const availableHeight = Math.max(320, window.innerHeight - headerHeight - 160); // leave room for modal/other
+  const maxByWidth = Math.floor(availableWidth / 4) - 12;
+  const maxByHeight = Math.floor(availableHeight / 4) - 12;
+  const size = Math.max(36, Math.min(160, Math.min(maxByWidth, maxByHeight)));
+  document.documentElement.style.setProperty('--card-size', `${size}px`);
+}
+
+let resizeTimeout = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(updateCardSize, 120);
+});
+
+// init sizing then board
+updateCardSize();
 setupBoard();
