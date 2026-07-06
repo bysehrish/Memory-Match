@@ -3,53 +3,70 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Memory Match — Kids Game</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#080a2a" />
+  <title>Pixel Pairs — Memory Arcade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="page-shell">
-    <header class="game-header">
+    <header class="game-header" aria-label="Game controls and score">
       <div class="title-block">
-        <div class="title-badge">✨</div>
+        <div class="title-badge" aria-hidden="true">P1</div>
         <div>
-          <p class="subtitle">Sweet, safe, and playful</p>
-          <h2>Memory Match — Kids Game</h2>
+          <p class="subtitle">Memory arcade / 1 player</p>
+          <h1>Pixel Pairs</h1>
         </div>
       </div>
 
       <div class="header-controls">
-        <button id="new-game" class="primary-button">New Game</button>
+        <div class="button-row">
+          <button id="new-game" class="primary-button">New run</button>
+          <button id="sound-toggle" class="icon-button" type="button" aria-pressed="false" aria-label="Mute game sounds">Sound: on</button>
+        </div>
         <div class="score-board">
           <div class="score-chip"><span>Moves</span><strong id="moves">0</strong></div>
           <div class="score-chip"><span>Pairs</span><strong id="pairs">0 / 8</strong></div>
           <div class="score-chip"><span>Score</span><strong id="score">0</strong></div>
-          <div class="score-chip"><span>High Score</span><strong id="high-score">--</strong></div>
+          <div class="score-chip"><span>Best</span><strong id="high-score">--</strong></div>
         </div>
       </div>
     </header>
 
     <main class="game-area">
-      <section class="board-shell">
+      <section class="board-shell" aria-labelledby="board-title">
+        <div class="board-intro">
+          <div>
+            <p class="eyebrow">Stage 01</p>
+            <h2 id="board-title">Clear all 8 pairs</h2>
+          </div>
+          <div id="game-status" class="status-display" aria-live="polite">Select two tiles to start.</div>
+        </div>
         <div id="board" class="board" aria-label="Memory card matching board"></div>
       </section>
     </main>
 
     <div class="modal-overlay hidden" id="victory-modal" role="dialog" aria-modal="true" aria-labelledby="victory-title">
       <div class="modal-card">
-        <div class="modal-hero">🎊</div>
-        <h3 id="victory-title">You matched them all!</h3>
-        <p class="modal-copy">Your memory is magical — great job!</p>
+        <div class="modal-hero" aria-hidden="true">🏆</div>
+        <p class="eyebrow">Stage complete</p>
+        <h3 id="victory-title">Perfect clear!</h3>
+        <p class="modal-copy">You owned the board. Queue another run and beat your score.</p>
         <div class="modal-stats">
           <div><span>Moves</span><strong id="win-moves">0</strong></div>
           <div><span>Final Score</span><strong id="win-score">0</strong></div>
           <div><span>Best Score</span><strong id="win-high-score">--</strong></div>
         </div>
-        <button id="modal-replay" class="primary-button">Play Again</button>
+        <button id="modal-replay" class="primary-button">Run it back</button>
       </div>
     </div>
 
     <div class="confetti-layer" aria-hidden="true"></div>
   </div>
+
+  <div id="sr-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
   <script src="script.js"></script>
 </body>
