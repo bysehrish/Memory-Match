@@ -154,8 +154,12 @@ img { display: block; max-width: 100%; }
 }
 .board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  /* keep 4 columns but enforce a sensible minimum so cards don't grow too large */
+  grid-template-columns: repeat(4, minmax(80px, 1fr));
+  gap: 10px;
+  justify-content: center;
+  max-width: 540px;
+  margin: 0 auto;
 }
 .card {
   width: var(--card-size);
@@ -163,6 +167,8 @@ img { display: block; max-width: 100%; }
   aspect-ratio: 1 / 1;
   perspective: 1100px;
   min-height: 0;
+  /* limit growth so cards stay compact on wide screens */
+  max-width: 120px;
 }
 .card-inner {
   width: 100%;
@@ -191,7 +197,7 @@ img { display: block; max-width: 100%; }
 }
 .card-front::before {
   content: '❓';
-  font-size: 1.85rem;
+  font-size: 2rem;
 }
 .card-back {
   transform: rotateY(180deg);
@@ -199,8 +205,7 @@ img { display: block; max-width: 100%; }
   border: 1px solid rgba(109, 196, 130, 0.24);
 }
 .card-back .emoji {
-  font-size: clamp(2rem, 3.2vw, 3.2rem);
-  filter: drop-shadow(0 6px 10px rgba(24, 63, 39, 0.12));
+  font-size: clamp(2.2rem, 3vw, 3.6rem);
 }
 .card:hover:not(.revealed):not(.matched) .card-inner {
   transform: translateY(-3px);
@@ -374,7 +379,8 @@ img { display: block; max-width: 100%; }
 @media (max-width: 700px) {
   .page-shell { padding: 20px 16px 28px; }
   .game-header { padding: 20px 20px; }
-  .board { gap: 14px; }
+  .board { gap: 10px; grid-template-columns: repeat(4, minmax(64px, 1fr)); }
+  .card { max-width: 92px; }
 }
 @media (max-width: 600px) {
   .hero-copy h1 { font-size: 2.3rem; }
