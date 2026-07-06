@@ -8,6 +8,9 @@
   --primary: #7b46ff;
   --primary-soft: #b384ff;
   --shadow: 0 30px 80px rgba(29, 16, 83, 0.16);
+  /* viewport-derived sizing for a responsive 4x4 grid */
+  --board-viewport-offset: 260px; /* estimated header + paddings */
+  --card-size: clamp(40px, min(calc((100vh - var(--board-viewport-offset)) / 4 - 12px), calc((100vw - 48px) / 4)), 160px);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
@@ -19,14 +22,7 @@ body {
   color: var(--text);
 }
 img { display: block; max-width: 100%; }
-.page-shell {
-  width: 100%;
-  max-width: 1180px;
-  min-height: 100vh;
-  min-height: 100dvh;
-  margin: 0 auto;
-  padding: 18px 24px 24px;
-}
+.page-shell { max-width: 980px; margin: 0 auto; padding: 18px 16px 24px; }
 .game-header {
   display: flex;
   flex-wrap: wrap;
@@ -45,12 +41,12 @@ img { display: block; max-width: 100%; }
   gap: 14px;
 }
 .title-badge {
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
+  width: clamp(44px, 7vw, 56px);
+  height: clamp(44px, 7vw, 56px);
+  border-radius: clamp(12px, 3vw, 18px);
   display: grid;
   place-items: center;
-  font-size: 1.35rem;
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
   background: linear-gradient(135deg, #ffd5ff, #c88dff);
   box-shadow: 0 20px 40px rgba(178, 84, 255, 0.18);
 }
@@ -61,7 +57,7 @@ img { display: block; max-width: 100%; }
 }
 .game-header h2 {
   margin: 0;
-  font-size: 1.7rem;
+  font-size: clamp(1.2rem, 2.6vw, 1.7rem);
 }
 .header-controls {
   display: flex;
@@ -84,14 +80,9 @@ img { display: block; max-width: 100%; }
   transform: translateY(-2px);
   box-shadow: 0 22px 48px rgba(123, 70, 255, 0.26);
 }
-.primary-button:focus-visible,
-.card:focus-visible {
-  outline: 4px solid rgba(123, 70, 255, 0.3);
-  outline-offset: 3px;
-}
 .score-board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, auto));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 .score-chip {
@@ -131,11 +122,17 @@ img { display: block; max-width: 100%; }
 }
 .board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  /* Force a 4-column layout using the computed card size so 4x4 fits viewport */
+  grid-template-columns: repeat(4, var(--card-size));
+  grid-auto-rows: var(--card-size);
+  gap: 12px;
+  align-items: start;
+  justify-content: center;
+  width: 100%;
 }
 .card {
-  width: 100%;
+  width: var(--card-size);
+  height: var(--card-size);
   aspect-ratio: 1 / 1;
   perspective: 1100px;
   min-height: 0;
@@ -336,15 +333,30 @@ img { display: block; max-width: 100%; }
   .card-back { border-radius: clamp(14px, 1.8vw, 22px); }
 }
 @media (max-width: 900px) {
-  .score-board { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  .hero-banner { grid-template-columns: 1fr; }
+  .hero-copy { padding: 22px; }
+  .score-board { grid-template-columns: repeat(2, minmax(0, auto)); width: 100%; }
 }
 @media (max-width: 700px) {
   .page-shell { padding: 20px 16px 28px; }
   .game-header { padding: 20px 20px; }
-  .board { gap: 14px; }
+  .board { grid-template-columns: repeat(4, minmax(48px, 1fr)); gap: 10px; }
 }
 @media (max-width: 600px) {
   .game-header { flex-direction: column; align-items: stretch; }
   .header-controls { justify-content: center; }
-  .score-board { grid-template-columns: repeat(2, minmax(0, auto)); }
+  .score-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .primary-button { padding: 10px 16px; font-size: 0.95rem; }
+}
+@media (max-width: 420px) {
+  .board { grid-template-columns: repeat(4, minmax(40px, 1fr)); gap: 8px; }
+  .modal-card { padding: 20px; }
+  .modal-hero { font-size: 2rem; }
+}
+
+@media (max-width: 480px) {
+  .page-shell { max-width: 100%; padding-left: 12px; padding-right: 12px; }
+  .score-chip { min-width: 0; padding: 10px 8px; font-size: 0.9rem; }
+  .header-controls { gap: 8px; align-items: center; }
+  .title-block { gap: 10px; }
 }
