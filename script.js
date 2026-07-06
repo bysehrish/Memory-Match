@@ -4,6 +4,7 @@ const movesEl = document.getElementById('moves');
 const pairsEl = document.getElementById('pairs');
 const scoreEl = document.getElementById('score');
 const highScoreEl = document.getElementById('high-score');
+const statusEl = document.getElementById('game-status');
 const modal = document.getElementById('victory-modal');
 const modalReplay = document.getElementById('modal-replay');
 const winMovesEl = document.getElementById('win-moves');
@@ -33,6 +34,12 @@ function loadHighScore() {
 
 function saveHighScore() {
   localStorage.setItem('memory-match-high-score', String(highScore));
+}
+
+function setStatus(message) {
+  if (statusEl) {
+    statusEl.textContent = message;
+  }
 }
 
 function updateScoreBoard() {
@@ -82,6 +89,7 @@ function setupBoard() {
   updateScoreBoard();
   closeModal();
   resetGameState();
+  setStatus('Fresh board ready — pick two leafy cards.');
 }
 
 function handleCardClick(card) {
@@ -91,6 +99,7 @@ function handleCardClick(card) {
 
   if (!firstCard) {
     firstCard = card;
+    setStatus('Great start — flip one more card.');
     return;
   }
 
@@ -115,23 +124,29 @@ function handleMatch() {
   animateMatch(secondCard);
   resetGameState();
   updateScoreBoard();
+  setStatus('Perfect match! Keep the streak going.');
 
   if (matchedPairs === emojis.length) {
     if (score > highScore) {
       highScore = score;
       saveHighScore();
     }
-    setTimeout(showVictoryModal, 450);
+    setTimeout(() => {
+      setStatus('You cleared the garden — lovely work!');
+      showVictoryModal();
+    }, 450);
   }
 }
 
 function handleMismatch() {
   score = Math.max(0, score - 10);
   updateScoreBoard();
+  setStatus('Not a match — give it another try.');
   setTimeout(() => {
     firstCard.classList.remove('revealed');
     secondCard.classList.remove('revealed');
     resetGameState();
+    setStatus('Try a new pair and keep the garden growing.');
   }, 900);
 }
 
@@ -189,7 +204,7 @@ function closeModal() {
 function launchCelebration() {
   const layer = document.querySelector('.confetti-layer');
   layer.innerHTML = '';
-  const colors = ['#ff7dfd', '#ffe36b', '#8bf0ff', '#8fffa4', '#ffba8f'];
+  const colors = ['#4f9d62', '#8ecf9b', '#ffe36b', '#7dd3fc', '#ffb36b'];
 
   for (let i = 0; i < 40; i++) {
     const piece = document.createElement('div');

@@ -3,17 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Memory Match — Kids Game</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta name="theme-color" content="#e7f7e9" />
+  <title>Leafy Memory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="page-shell">
     <header class="game-header">
       <div class="title-block">
-        <div class="title-badge">✨</div>
+        <div class="title-badge">🌿</div>
         <div>
-          <p class="subtitle">Sweet, safe, and playful</p>
-          <h2>Memory Match — Kids Game</h2>
+          <p class="subtitle">A calm, green little challenge</p>
+          <h1>Leafy Memory</h1>
         </div>
       </div>
 
@@ -30,15 +34,22 @@
 
     <main class="game-area">
       <section class="board-shell">
+        <div class="board-intro">
+          <div>
+            <p class="eyebrow">Garden challenge</p>
+            <h2>Find every matching leaf.</h2>
+          </div>
+          <div id="game-status" class="status-pill" aria-live="polite">Flip two cards to begin your leafy quest.</div>
+        </div>
         <div id="board" class="board" aria-label="Memory card matching board"></div>
       </section>
     </main>
 
     <div class="modal-overlay hidden" id="victory-modal" role="dialog" aria-modal="true" aria-labelledby="victory-title">
       <div class="modal-card">
-        <div class="modal-hero">🎊</div>
+        <div class="modal-hero">🎉</div>
         <h3 id="victory-title">You matched them all!</h3>
-        <p class="modal-copy">Your memory is magical — great job!</p>
+        <p class="modal-copy">Your memory is blooming beautifully.</p>
         <div class="modal-stats">
           <div><span>Moves</span><strong id="win-moves">0</strong></div>
           <div><span>Final Score</span><strong id="win-score">0</strong></div>
