@@ -17,6 +17,8 @@ body {
               radial-gradient(circle at top right, rgba(179, 226, 255, 0.8), transparent 20%),
               linear-gradient(180deg, #d0f1ff 0%, #fff7ca 100%);
   color: var(--text);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 img { display: block; max-width: 100%; }
 .page-shell { max-width: 980px; margin: 0 auto; padding: 18px 16px 24px; }
