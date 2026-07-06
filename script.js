@@ -5,13 +5,14 @@ const pairsEl = document.getElementById('pairs');
 const scoreEl = document.getElementById('score');
 const highScoreEl = document.getElementById('high-score');
 const statusEl = document.getElementById('game-status');
+const soundToggle = document.getElementById('sound-toggle');
 const modal = document.getElementById('victory-modal');
 const modalReplay = document.getElementById('modal-replay');
 const winMovesEl = document.getElementById('win-moves');
 const winScoreEl = document.getElementById('win-score');
 const winHighScoreEl = document.getElementById('win-high-score');
 
-const emojis = ['⭐️','🍉','🎈','🍓','🐝','🧸','🦄','🌈'];
+const emojis = ['👾', '🕹️', '💾', '📼', '💿', '🎧', '📟', '🚀'];
 let firstCard = null;
 let secondCard = null;
 let lockBoard = false;
@@ -19,6 +20,63 @@ let moves = 0;
 let matchedPairs = 0;
 let score = 0;
 let highScore = 0;
+let soundEnabled = true;
+let audioContext = null;
+
+function getAudioContext() {
+  if (!audioContext) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) audioContext = new AudioContext();
+  }
+  if (audioContext?.state === 'suspended') {
+    audioContext.resume().catch(() => {});
+  }
+  return audioContext;
+}
+
+function playTone(frequency, duration = 0.08, type = 'square', delay = 0, volume = 0.045) {
+  if (!soundEnabled) return;
+  const context = getAudioContext();
+  if (!context) return;
+
+  const start = context.currentTime + delay;
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, start);
+  gain.gain.setValueAtTime(volume, start);
+  gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(start);
+  oscillator.stop(start + duration);
+}
+
+function playSound(name) {
+  const patterns = {
+    flip: [[420, 0.045, 'square', 0]],
+    match: [[523, 0.08, 'square', 0], [659, 0.08, 'square', 0.07], [784, 0.12, 'square', 0.14]],
+    miss: [[210, 0.09, 'sawtooth', 0], [150, 0.13, 'sawtooth', 0.08]],
+    start: [[330, 0.06, 'square', 0], [440, 0.06, 'square', 0.06], [660, 0.1, 'square', 0.12]],
+    win: [[523, 0.1, 'square', 0], [659, 0.1, 'square', 0.1], [784, 0.1, 'square', 0.2], [1047, 0.24, 'square', 0.3]]
+  };
+  (patterns[name] || []).forEach(args => playTone(...args));
+}
+
+function loadSoundPreference() {
+  try {
+    soundEnabled = localStorage.getItem('pixel-pairs-sound') !== 'off';
+  } catch (error) {
+    soundEnabled = true;
+  }
+  updateSoundButton();
+}
+
+function updateSoundButton() {
+  soundToggle.textContent = `Sound: ${soundEnabled ? 'on' : 'off'}`;
+  soundToggle.setAttribute('aria-pressed', String(!soundEnabled));
+  soundToggle.setAttribute('aria-label', soundEnabled ? 'Mute game sounds' : 'Enable game sounds');
+}
 
 function shuffle(array) {
   return array
@@ -94,6 +152,7 @@ function resetGameState() {
 }
 
 function setupBoard() {
+  board.classList.add('is-shuffling');
   board.innerHTML = '';
   const deck = shuffle([...emojis, ...emojis]);
   deck.forEach(emoji => board.appendChild(createCard(emoji)));
@@ -105,19 +164,22 @@ function setupBoard() {
   updateScoreBoard();
   closeModal();
   resetGameState();
-  setStatus('Fresh board ready — pick two leafy cards.');
+  setStatus('New run loaded. Pick a tile.');
+  playSound('start');
+  setTimeout(() => board.classList.remove('is-shuffling'), 260);
 }
 
 function handleCardClick(card) {
   if (lockBoard || card.classList.contains('revealed') || card.classList.contains('matched')) return;
 
   card.classList.add('revealed');
+  playSound('flip');
   card.setAttribute('aria-pressed', 'true');
   card.setAttribute('aria-label', `Card showing ${card.dataset.emoji}`);
 
   if (!firstCard) {
     firstCard = card;
-    setStatus('Great start — flip one more card.');
+    setStatus('Tile locked. Find its pair.');
     return;
   }
 
@@ -141,12 +203,13 @@ function handleMatch() {
   const live = document.getElementById('sr-live');
   if (live) live.textContent = `Matched ${firstCard.dataset.emoji}`;
   score += 100;
+  playSound('match');
   matchedPairs += 1;
   animateMatch(firstCard);
   animateMatch(secondCard);
   resetGameState();
   updateScoreBoard();
-  setStatus('Perfect match! Keep the streak going.');
+  setStatus('Match confirmed! Keep moving.');
 
   if (matchedPairs === emojis.length) {
     if (score > highScore) {
@@ -154,7 +217,7 @@ function handleMatch() {
       saveHighScore();
     }
     setTimeout(() => {
-      setStatus('You cleared the garden — lovely work!');
+      setStatus('Perfect clear! Stage complete.');
       showVictoryModal();
     }, 450);
   }
@@ -162,15 +225,16 @@ function handleMatch() {
 
 function handleMismatch() {
   score = Math.max(0, score - 10);
+  playSound('miss');
   updateScoreBoard();
-  setStatus('Not a match — give it another try.');
+  setStatus('No match. Memorize and retry.');
   setTimeout(() => {
     firstCard.classList.remove('revealed');
     secondCard.classList.remove('revealed');
     firstCard.setAttribute('aria-pressed', 'false');
     secondCard.setAttribute('aria-pressed', 'false');
     resetGameState();
-    setStatus('Try a new pair and keep the garden growing.');
+    setStatus('Tiles reset. Choose again.');
   }, 900);
 }
 
@@ -222,6 +286,7 @@ function showVictoryModal() {
   winScoreEl.textContent = score;
   winHighScoreEl.textContent = highScore > 0 ? highScore : '--';
   modal.classList.remove('hidden');
+  playSound('win');
   trapModalFocus(modal);
   launchCelebration();
 }
@@ -270,6 +335,8 @@ function launchCelebration() {
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   layer.innerHTML = '';
   const colors = ['#ff7dfd', '#ffe36b', '#8bf0ff', '#8fffa4', '#ffba8f'];
+  const confettiCount = reduced ? 0 : 42;
+  const sparkleCount = reduced ? 0 : 18;
 
   for (let i = 0; i < confettiCount; i++) {
     const piece = document.createElement('div');
@@ -296,32 +363,20 @@ function launchCelebration() {
 }
 
 newGameBtn.addEventListener('click', setupBoard);
+soundToggle.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  try {
+    localStorage.setItem('pixel-pairs-sound', soundEnabled ? 'on' : 'off');
+  } catch (error) {
+    // The preference remains active for this session.
+  }
+  updateSoundButton();
+  if (soundEnabled) playTone(660, 0.08);
+});
 modalReplay.addEventListener('click', setupBoard);
 modal.addEventListener('click', event => {
   if (event.target === modal) closeModal();
 });
 
-// Responsive card sizing: compute exact size so 4x4 fits viewport
-function updateCardSize() {
-  const shell = document.querySelector('.page-shell');
-  const header = document.querySelector('.game-header');
-  const shellStyles = getComputedStyle(shell);
-  const shellPaddingX = parseFloat(shellStyles.paddingLeft) + parseFloat(shellStyles.paddingRight);
-  const availableWidth = Math.max(320, window.innerWidth - shellPaddingX - 24);
-  const headerHeight = header ? header.getBoundingClientRect().height : 120;
-  const availableHeight = Math.max(320, window.innerHeight - headerHeight - 160); // leave room for modal/other
-  const maxByWidth = Math.floor(availableWidth / 4) - 12;
-  const maxByHeight = Math.floor(availableHeight / 4) - 12;
-  const size = Math.max(36, Math.min(160, Math.min(maxByWidth, maxByHeight)));
-  document.documentElement.style.setProperty('--card-size', `${size}px`);
-}
-
-let resizeTimeout = null;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(updateCardSize, 120);
-});
-
-// init sizing then board
-updateCardSize();
+loadSoundPreference();
 setupBoard();
